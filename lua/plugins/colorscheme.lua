@@ -24,7 +24,7 @@ return {
       -- "catppuccin-mocha", "catppuccin-latte", etc.
       -- "tokyonight-night", "tokyonight-storm", etc.
       -- "kanagawa", "kanagawa-dragon", etc.
-      colorscheme = "kanagawa-dragon",
+      colorscheme = "gruvbox",
     },
   },
 }
