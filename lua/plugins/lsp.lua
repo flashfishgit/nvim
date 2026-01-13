@@ -8,16 +8,7 @@ return {
           { "<leader>ch", "<cmd>LspClangdSwitchSourceHeader<cr>", desc = "Switch Source/Header (C/C++)" },
         },
         root_markers = {
-          "compile_commands.json",
-          "compile_flags.txt",
-          "configure.ac", -- AutoTools
           "Makefile",
-          "configure.ac",
-          "configure.in",
-          "config.h.in",
-          "meson.build",
-          "meson_options.txt",
-          "build.ninja",
           ".git",
         },
         capabilities = {
@@ -31,6 +22,8 @@ return {
           "--completion-style=detailed",
           "--function-arg-placeholders",
           "--fallback-style=llvm",
+          "--compile-commands-dir=build",
+          "--query-driver=**/xtensa-esp32*-elf-*,**/riscv32-esp-elf-*",
         },
         init_options = {
           usePlaceholders = true,

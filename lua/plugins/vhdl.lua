@@ -1,0 +1,46 @@
+--return {
+--  -- Install VHDL Style Guide (vsg) via Mason
+--  {
+--    "mason-org/mason.nvim",
+--    opts = {
+--      ensure_installed = {
+--        "vhdl-style-guide",
+--      },
+--    },
+--  },
+--
+--  -- Use vsg as formatter for VHDL
+--  {
+--    "stevearc/conform.nvim",
+--    opts = {
+--      formatters_by_ft = {
+--        vhdl = { "vsg" },
+--      },
+--      formatters = {
+--        vsg = {
+--          command = "vsg",
+--          args = { "-f", "$FILENAME", "--fix" },
+--          stdin = false,
+--        },
+--      },
+--    },
+--  },
+--  {
+--    "mfussenegger/nvim-lint",
+--    optional = true,
+--    opts = function(_, opts)
+--      opts.linters_by_ft = opts.linters_by_ft or {}
+--
+--      -- add / override linters for vhdl
+--      opts.linters_by_ft.vhdl = { "vsg" }
+--
+--      -- (optional) extra config for vsg linter, if you need it:
+--      -- opts.linters = opts.linters or {}
+--      -- opts.linters.vsg = {
+--      --   cmd = "vsg",
+--      --   stdin = false,
+--      --   args = { "-f", "$FILENAME" },
+--      -- }
+--    end,
+--  },
+--}
