@@ -12,7 +12,71 @@ return {
     local ui = require("dapui")
     local dap_virtual_text = require("nvim-dap-virtual-text")
 
+    dap.adapters.cppdbg = {
+      id = "cppdbg",
+      type = "executable",
+      command = vim.fn.stdpath("data") .. "/mason/packages/cpptools/extension/debugAdapters/bin/OpenDebugAD7",
+    }
+
     dap.configurations = {
+      cpp = {
+        {
+          name = "ESP32 OpenOCD",
+          type = "cppdbg",
+          request = "launch",
+
+          program = "${workspaceFolder}/build/HB_Controller.elf",
+          cwd = "${workspaceFolder}",
+
+          MIMode = "gdb",
+          miDebuggerPath = "xtensa-esp32s3-elf-gdb",
+
+          miDebuggerServerAddress = "localhost:3333",
+
+          stopAtEntry = true,
+          externalConsole = false,
+
+          setupCommands = {
+            {
+              text = "target remote :3333",
+            },
+            {
+              text = "monitor reset halt",
+            },
+            {
+              text = "monitor reset init",
+            },
+          },
+        },
+        {
+          name = "ESP32 OpenOCD",
+          type = "cppdbg",
+          request = "launch",
+
+          program = "${workspaceFolder}/build/HB_Controller.elf",
+          cwd = "${workspaceFolder}",
+
+          MIMode = "gdb",
+          miDebuggerPath = "xtensa-esp32s3-elf-gdb",
+          miDebuggerServerAddress = "localhost:3333",
+
+          stopAtEntry = true,
+          externalConsole = false,
+
+          setupCommands = {
+            { text = "set remote hardware-watchpoint-limit 2" },
+            { text = "monitor reset halt" },
+            { text = "set mem inaccessible-by-default off" },
+            { text = "set gdb_memory_map disable" },
+          },
+
+          customLaunchSetupCommands = {
+            { text = "target extended-remote localhost:3333" },
+            { text = "monitor reset halt" },
+            { text = "monitor reset init" },
+          },
+        },
+      },
       c = {
         {
           name = "Launch file",
@@ -36,6 +100,56 @@ return {
           program = function()
             return vim.fn.input("Path to executable: ", vim.fn.getcwd() .. "/", "file")
           end,
+        },
+        {
+          name = "STM32 OpenOCD",
+          type = "cppdbg",
+          request = "launch",
+
+          program = "${workspaceFolder}/build/Uebung01.elf",
+          cwd = "${workspaceFolder}",
+
+          MIMode = "gdb",
+          miDebuggerPath = vim.fn.exepath("gdb"),
+          miDebuggerServerAddress = "localhost:3333",
+          targetArchitecture = "arm",
+
+          stopAtEntry = true,
+          stopAtConnect = true,
+          externalConsole = false,
+
+          setupCommands = {
+            {
+              text = "file ${workspaceFolder}/build/Uebung01.elf",
+              description = "Load symbols",
+              ignoreFailures = false,
+            },
+          },
+
+          customLaunchSetupCommands = {
+            {
+              text = "target extended-remote localhost:3333",
+              description = "Connect to OpenOCD",
+              ignoreFailures = false,
+            },
+            {
+              text = "monitor reset halt",
+              description = "Reset and halt target",
+              ignoreFailures = false,
+            },
+            {
+              text = "load",
+              description = "Flash firmware",
+              ignoreFailures = false,
+            },
+            {
+              text = "thbreak main",
+              description = "Break at main",
+              ignoreFailures = true,
+            },
+          },
+
+          launchCompleteCommand = "exec-continue",
         },
       },
     }

@@ -1,46 +1,105 @@
 --return {
---  -- Install VHDL Style Guide (vsg) via Mason
 --  {
 --    "mason-org/mason.nvim",
 --    opts = {
---      ensure_installed = {
---        "vhdl-style-guide",
---      },
+--      ensure_installed = { "vsg" },
 --    },
 --  },
 --
---  -- Use vsg as formatter for VHDL
 --  {
 --    "stevearc/conform.nvim",
---    opts = {
---      formatters_by_ft = {
---        vhdl = { "vsg" },
---      },
---      formatters = {
---        vsg = {
---          command = "vsg",
---          args = { "-f", "$FILENAME", "--fix" },
---          stdin = false,
---        },
---      },
---    },
+--    optional = true,
+--    opts = function(_, opts)
+--      opts.formatters_by_ft = opts.formatters_by_ft or {}
+--      opts.formatters_by_ft.vhdl = { "vsg" }
+--
+--      opts.formatters = opts.formatters or {}
+--      opts.formatters.vsg = {
+--        command = "vsg",
+--        args = function(_, ctx)
+--          local root = vim.fs.root(ctx.dirname, { "vsg_config.yaml", ".vsg.yaml", ".git" }) or vim.fn.getcwd()
+--          local config = nil
+--
+--          if vim.fn.filereadable(root .. "/vsg_config.yaml") == 1 then
+--            config = root .. "/vsg_config.yaml"
+--          elseif vim.fn.filereadable(root .. "/.vsg.yaml") == 1 then
+--            config = root .. "/.vsg.yaml"
+--          end
+--
+--          local args = {}
+--          if config then
+--            vim.list_extend(args, { "--configuration", config })
+--          end
+--
+--          vim.list_extend(args, {
+--            "-f",
+--            ctx.filename,
+--            "--fix",
+--          })
+--
+--          return args
+--        end,
+--        stdin = false,
+--        exit_codes = { 0, 1 },
+--      }
+--    end,
 --  },
+--
 --  {
 --    "mfussenegger/nvim-lint",
 --    optional = true,
---    opts = function(_, opts)
---      opts.linters_by_ft = opts.linters_by_ft or {}
+--    config = function(_, opts)
+--      local lint = require("lint")
 --
---      -- add / override linters for vhdl
---      opts.linters_by_ft.vhdl = { "vsg" }
+--      lint.linters_by_ft = vim.tbl_deep_extend("force", lint.linters_by_ft or {}, {
+--        vhdl = { "vsg" },
+--      })
 --
---      -- (optional) extra config for vsg linter, if you need it:
---      -- opts.linters = opts.linters or {}
---      -- opts.linters.vsg = {
---      --   cmd = "vsg",
---      --   stdin = false,
---      --   args = { "-f", "$FILENAME" },
---      -- }
+--      lint.linters.vsg = function()
+--        local file = vim.api.nvim_buf_get_name(0)
+--        local dir = vim.fs.dirname(file)
+--        local root = vim.fs.root(dir, { "vsg_config.yaml", ".vsg.yaml", ".git" }) or vim.fn.getcwd()
+--        local config = nil
+--
+--        if vim.fn.filereadable(root .. "/vsg_config.yaml") == 1 then
+--          config = root .. "/vsg_config.yaml"
+--        elseif vim.fn.filereadable(root .. "/.vsg.yaml") == 1 then
+--          config = root .. "/.vsg.yaml"
+--        end
+--
+--        local args = {}
+--        if config then
+--          vim.list_extend(args, { "--configuration", config })
+--        end
+--
+--        vim.list_extend(args, {
+--          "-f",
+--          file,
+--          "--output_format",
+--          "syntastic",
+--        })
+--
+--        return {
+--          cmd = "vsg",
+--          stdin = false,
+--          append_fname = false,
+--          args = args,
+--          ignore_exitcode = true,
+--          parser = require("lint.parser").from_errorformat("%tRROR: %f(%l)%*[^(] -- %m,%tARNING: %f(%l)%*[^(] -- %m", {
+--            source = "vsg",
+--            severity = {
+--              E = vim.diagnostic.severity.ERROR,
+--              W = vim.diagnostic.severity.WARN,
+--            },
+--          }),
+--        }
+--      end
+--
+--      vim.api.nvim_create_autocmd({ "BufReadPost", "BufWritePost", "InsertLeave" }, {
+--        callback = function()
+--          lint.try_lint("vsg")
+--        end,
+--      })
 --    end,
 --  },
 --}
