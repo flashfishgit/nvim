@@ -1,10 +1,9 @@
+local home = os.getenv("HOME")
+
 return {
   "neovim/nvim-lspconfig",
   opts = {
     servers = {
-      -- Ensure mason installs the server
-      texlab = {},
-      marksman = {},
       clangd = {
         keys = {
           { "<leader>ch", "<cmd>LspClangdSwitchSourceHeader<cr>", desc = "Switch Source/Header (C/C++)" },
@@ -19,7 +18,7 @@ return {
           offsetEncoding = { "utf-16" },
         },
         cmd = {
-          "clangd",
+          --home .. "/.espressif/tools/esp-clang/esp-20.1.1_20250829/esp-clang/bin/clangd",
           "--background-index",
           "--clang-tidy",
           "--header-insertion=iwyu",
@@ -27,7 +26,11 @@ return {
           "--function-arg-placeholders",
           "--fallback-style=llvm",
           "--compile-commands-dir=build",
-          -- "--query-driver=**/xtensa-esp32*-elf-*,**/riscv32-esp-elf-*",
+          --"--query-driver="
+          --  .. home
+          --  .. "/.espressif/tools/xtensa-esp-elf/esp-15.2.0_20251204/xtensa-esp-elf/bin/xtensa-esp32s3-elf-gcc,"
+          --  .. home
+          --  .. "/.espressif/tools/xtensa-esp-elf/esp-15.2.0_20251204/xtensa-esp-elf/bin/xtensa-esp32s3-elf-g++",
         },
         init_options = {
           usePlaceholders = true,
