@@ -2,9 +2,9 @@
 -- Default keymaps that are always set: https://github.com/LazyVim/LazyVim/blob/main/lua/lazyvim/config/keymaps.lua
 -- Add any additional keymaps here
 
-vim.keymap.set("i", "df", "<Esc>", { noremap = true })
+vim.keymap.set("i", "kj", "<Esc>", { noremap = true })
 
-vim.keymap.set("i", "df", "<Esc>", { noremap = true })
+vim.keymap.set("i", "kj", "<Esc>", { noremap = true })
 
 vim.keymap.set("v", "J", ":m '>+1<CR>gv=gv")
 
