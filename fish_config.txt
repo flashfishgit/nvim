@@ -1,0 +1,148 @@
+# =========================================================
+# Fish config
+# File: ~/.config/fish/config.fish
+# Loaded when a new interactive fish shell starts.
+# =========================================================
+
+# =========================================================
+# 1) Environment variables
+# These are exported so child processes can see them.
+# =========================================================
+
+# Intel/Altera license file
+set -gx LM_LICENSE_FILE $HOME/licenses/LR-233213_License.dat
+
+# Quartus Qsys / Platform Designer root
+set -gx QSYS_ROOTDIR $HOME/altera_lite/24.1std/quartus/sopc_builder/bin
+
+# Example of a universal exported variable (disabled on purpose).
+# Universal variables persist across fish sessions.
+# Keep secrets out of config files if possible.
+# set -Ux TOKEN your-token-here
+
+# =========================================================
+# 2) PATH setup
+# fish_add_path prepends entries and avoids duplicates.
+# =========================================================
+
+# User tools
+fish_add_path $HOME/.tmuxifier/bin
+fish_add_path $HOME/.local/bin $HOME/bin
+
+# FPGA / EDA tools
+fish_add_path $HOME/altera_lite/24.1std/quartus/bin
+fish_add_path $HOME/altera/24.1std/questa_fse/linux_x86_64
+fish_add_path $HOME/altera_lite/24.1std/University_Program/Monitor_Program/arm_tools/baremetal/bin
+
+# MATLAB
+fish_add_path $HOME/MATLAB/R2025b/bin
+
+# STM32 tools
+fish_add_path /usr/local/STMicroelectronics/STM32Cube/STM32CubeProgrammer
+
+# CMSIS / ARM toolchain
+set -gx AC6_TOOLCHAIN_6_22_0 $HOME/ArmCompilerforEmbedded6.22/bin
+set -gx CMSIS_PACK_ROOT $HOME/packs
+set -gx CMSIS_COMPILER_ROOT $HOME/cmsis-toolbox-linux-amd64/etc
+fish_add_path $HOME/cmsis-toolbox-linux-amd64/bin
+
+# =========================================================
+# 3) Aliases
+# alias in fish is basically a small wrapper function.
+# =========================================================
+
+alias r="command ranger"
+alias n="command nvim"
+
+# Copy current directory to clipboard
+alias pwdc='pwd | xclip -selection clipboard'
+
+# Quartus 21.1
+function quartus21
+    set -lx QSYS_ROOTDIR $HOME/intelFPGA_lite/21.1/quartus/sopc_builder/bin
+    $HOME/intelFPGA_lite/21.1/quartus/bin/quartus $argv
+end
+
+function monitor
+    $HOME/altera_lite/24.1std/University_Program/Monitor_Program/bin/intel-fpga-monitor-program $argv
+end
+
+# =========================================================
+# 4) External tool initialization
+# These commands run during shell startup.
+# =========================================================
+
+# tmuxifier fish integration
+if test -f $HOME/.tmuxifier/init.fish
+    source $HOME/.tmuxifier/init.fish
+end
+
+# Load extra fish snippets, if any exist
+for rc in $HOME/.bashrc.d/*.fish
+    if test -f $rc
+        source $rc
+    end
+end
+
+# Start ssh-agent only if one is not already available
+if not set -q SSH_AUTH_SOCK
+    ssh-agent -c | source
+end
+
+# zoxide: replace cd with smarter directory jumping
+zoxide init --cmd cd fish | source
+
+# =========================================================
+# 5) Custom helper functions
+# These are defined at startup, but most do NOT run at startup.
+# They run only when you call them, unless fish uses them specially.
+# =========================================================
+
+# Launch Sparx Enterprise Architect via Wine
+function ea --description "Launch Enterprise Architect under Wine"
+    env GTK_IM_MODULE=xim QT_IM_MODULE=xim XMODIFIERS=@im=none \
+        wine "C:\Program Files\Sparx Systems\EA\EA.exe"
+end
+
+# Load ESP-IDF environment into current shell
+function get_idf --description "Load ESP-IDF environment"
+    source $HOME/esp/esp-idf/export.fish
+    and echo "ESP-IDF env loaded"
+end
+
+# Launch LVGL editor in background
+function lvgl --description "Launch LVGL Pro Editor"
+    $HOME/LVGL_Pro_Editor-1.1.1-linux/lvgl-editor-1.1.1-x86_64.AppImage >/dev/null 2>&1 & disown
+end
+
+# =========================================================
+# 6) Vi-style keybindings
+# This function IS special: fish calls the function named in
+# $fish_key_bindings to set up the shell's bindings.
+# =========================================================
+
+function my_vi_bindings --description "Custom vi-like fish keybindings"
+    # Start in normal mode
+    fish_vi_key_bindings default
+
+    # Leave insert mode with jk
+    bind --mode insert --sets-mode default kj repaint
+
+    # Clipboard: Space y in normal mode copies commandline/selection
+    bind --mode default \x20y fish_clipboard_copy
+
+    # Paste from system clipboard in normal mode
+    bind --mode default p fish_clipboard_paste
+
+    # Accept autosuggestion in insert mode with Ctrl+L
+    bind --mode insert \cl accept-autosuggestion
+
+    # Accept one word forward with Alt+F
+    bind --mode insert \ef forward-word
+end
+
+# Tell fish to use the function above for keybinding setup
+set -g fish_key_bindings my_vi_bindings
+
+# Timeout for multi-key bindings like "jk"
+set -g fish_sequence_key_delay_ms 300
