@@ -173,21 +173,71 @@ return {
   end,
 
   keys = {
-    { "<leader>d", function() end, desc = "Debugger" }, -- group label (noop)
-    {
-      "<leader>dt",
-      function()
-        require("dap").toggle_breakpoint()
-      end,
-      desc = "Toggle Breakpoint",
-    },
+    { "<leader>d", function() end, desc = "Debugger" },
+
+    -- Start / Continue / Stop
     {
       "<leader>dc",
       function()
         require("dap").continue()
       end,
-      desc = "Continue",
+      desc = "Continue / Start Debugging",
     },
+    {
+      "<leader>dC",
+      function()
+        require("dap").run_to_cursor()
+      end,
+      desc = "Run to Cursor",
+    },
+    {
+      "<leader>dp",
+      function()
+        require("dap").pause()
+      end,
+      desc = "Pause",
+    },
+    {
+      "<leader>dq",
+      function()
+        require("dap").terminate()
+        require("dapui").close()
+      end,
+      desc = "Terminate Debug Session",
+    },
+    {
+      "<leader>dQ",
+      function()
+        require("dap").disconnect()
+        require("dapui").close()
+      end,
+      desc = "Disconnect Debugger",
+    },
+    {
+      "<leader>dl",
+      function()
+        require("dap").run_last()
+      end,
+      desc = "Run Last Debug Config",
+    },
+    {
+      "<leader>dR",
+      function()
+        local dap = require("dap")
+
+        if dap.restart then
+          dap.restart()
+        else
+          dap.terminate()
+          vim.defer_fn(function()
+            dap.run_last()
+          end, 300)
+        end
+      end,
+      desc = "Restart Debug Session",
+    },
+
+    -- Stepping
     {
       "<leader>di",
       function()
@@ -210,27 +260,41 @@ return {
       desc = "Step Out",
     },
     {
-      "<leader>dr",
+      "<leader>dj",
       function()
-        require("dap").repl.open()
+        require("dap").down()
       end,
-      desc = "Open REPL",
+      desc = "Move Down Stack Frame",
     },
     {
-      "<leader>dl",
+      "<leader>dk",
       function()
-        require("dap").run_last()
+        require("dap").up()
       end,
-      desc = "Run Last",
+      desc = "Move Up Stack Frame",
+    },
+
+    -- Breakpoints
+    {
+      "<leader>dt",
+      function()
+        require("dap").toggle_breakpoint()
+      end,
+      desc = "Toggle Breakpoint",
     },
     {
-      "<leader>dq",
+      "<leader>dB",
       function()
-        require("dap").terminate()
-        require("dapui").close()
-        require("nvim-dap-virtual-text").toggle()
+        require("dap").set_breakpoint(vim.fn.input("Breakpoint condition: "))
       end,
-      desc = "Terminate",
+      desc = "Conditional Breakpoint",
+    },
+    {
+      "<leader>dL",
+      function()
+        require("dap").set_breakpoint(nil, nil, vim.fn.input("Log point message: "))
+      end,
+      desc = "Logpoint",
     },
     {
       "<leader>db",
@@ -240,11 +304,135 @@ return {
       desc = "List Breakpoints",
     },
     {
+      "<leader>dX",
+      function()
+        require("dap").clear_breakpoints()
+      end,
+      desc = "Clear All Breakpoints",
+    },
+
+    -- REPL / UI
+    {
+      "<leader>dr",
+      function()
+        require("dap").repl.toggle()
+      end,
+      desc = "Toggle DAP REPL",
+    },
+    {
+      "<leader>dU",
+      function()
+        require("dapui").toggle()
+      end,
+      desc = "Toggle Debug UI",
+    },
+    {
+      "<leader>dv",
+      function()
+        require("nvim-dap-virtual-text").toggle()
+      end,
+      desc = "Toggle Virtual Text",
+    },
+
+    -- DAP UI elements
+    {
+      "<leader>ds",
+      function()
+        require("dapui").float_element("scopes", { enter = true })
+      end,
+      desc = "Show Scopes",
+    },
+    {
+      "<leader>dS",
+      function()
+        require("dapui").float_element("stacks", { enter = true })
+      end,
+      desc = "Show Call Stack",
+    },
+    {
+      "<leader>dw",
+      function()
+        require("dapui").float_element("watches", { enter = true })
+      end,
+      desc = "Show Watches",
+    },
+    {
+      "<leader>dW",
+      function()
+        require("dapui").elements.watches.add()
+      end,
+      desc = "Add Watch",
+    },
+    {
+      "<leader>df",
+      function()
+        require("dapui").float_element("breakpoints", { enter = true })
+      end,
+      desc = "Show Breakpoints Window",
+    },
+    {
       "<leader>de",
+      function()
+        require("dapui").eval()
+      end,
+      desc = "Evaluate Expression",
+    },
+    {
+      "<leader>dh",
+      function()
+        require("dap.ui.widgets").hover()
+      end,
+      desc = "Hover Variable",
+    },
+    {
+      "<leader>d?",
+      function()
+        local widgets = require("dap.ui.widgets")
+        widgets.centered_float(widgets.scopes)
+      end,
+      desc = "Centered Scopes Float",
+    },
+
+    -- Exception breakpoints
+    {
+      "<leader>dE",
       function()
         require("dap").set_exception_breakpoints({ "all" })
       end,
-      desc = "Set Exception Breakpoints",
+      desc = "Break on All Exceptions",
+    },
+
+    -- Sessions / configs
+    {
+      "<leader>da",
+      function()
+        require("dap").continue({
+          before = function(config)
+            print("Starting DAP config: " .. (config.name or "unknown"))
+          end,
+        })
+      end,
+      desc = "Start With Config Info",
+    },
+    {
+      "<leader>dP",
+      function()
+        local dap = require("dap")
+        local sessions = dap.sessions()
+
+        vim.print(sessions)
+      end,
+      desc = "Print Active DAP Sessions",
+    },
+
+    -- Visual mode evaluate
+    {
+      "<leader>de",
+      function()
+        require("dapui").eval()
+      end,
+      mode = { "v" },
+      desc = "Evaluate Selection",
     },
   },
 }

@@ -12,7 +12,7 @@ local function clangd_cmd(root)
       "--completion-style=detailed",
       "--function-arg-placeholders",
       "--fallback-style=llvm",
-      "--query-driver=**/xtensa-esp32*-elf-*,**/riscv32-esp-elf-*,/home/flashfish/.espressif/tools/**/bin/*",
+      "--query-driver=**/xtensa-esp32*-elf-*,**/riscv32-esp-elf-*,/home/flashfish/.espressif/tools/**/bin/*,/home/flashfish/.espressif/tools/**/bin/*gcc,/home/flashfish/.espressif/tools/**/bin/*g++",
     }
   end
 

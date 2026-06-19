@@ -32,3 +32,31 @@ vim.keymap.set("i", "<M-b>", "[]", { noremap = true, silent = true })
 
 -- Map <F5> to run the build and launch the terminal in Lua
 vim.api.nvim_set_keymap("n", "<leader>r", ":!./run.sh<CR>", { noremap = true, silent = true })
+
+-- <leader>ffb = find Boost headers
+vim.keymap.set("n", "<leader>flb", function()
+  LazyVim.pick("files", {
+    cwd = "/usr/include/boost",
+  })()
+end, { desc = "Find Boost headers" })
+
+-- <leader>fgb = grep Boost headers
+vim.keymap.set("n", "<leader>slb", function()
+  LazyVim.pick("live_grep", {
+    cwd = "/usr/include/boost",
+  })()
+end, { desc = "Grep Boost headers" })
+
+-- <leader>ffb = find all headers
+vim.keymap.set("n", "<leader>fla", function()
+  LazyVim.pick("files", {
+    cwd = "/usr/include/boost",
+  })()
+end, { desc = "Find Boost headers" })
+
+-- <leader>fgb = grep all headers
+vim.keymap.set("n", "<leader>sla", function()
+  LazyVim.pick("live_grep", {
+    cwd = "/usr/include/boost",
+  })()
+end, { desc = "Grep Boost headers" })
