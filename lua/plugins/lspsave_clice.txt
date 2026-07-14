@@ -1,0 +1,147 @@
+
+local CLICE = "/home/flashfish-desktop/src/clice/build/RelWithDebInfo/bin/clice"
+
+local ESP_CLANGD = "/home/flashfish/.espressif/tools/esp-clang/esp-20.1.1_20250829/esp-clang/bin/clangd"
+
+local clice_root_markers = {
+  "clice.toml",
+  ".root_marker_lsp",
+  "compile_commands.json",
+  "compile_flags.txt",
+  "CMakeLists.txt",
+  "configure.ac",
+  "configure.in",
+  "Makefile",
+  "meson.build",
+  "meson_options.txt",
+  "build.ninja",
+  ".clang-tidy",
+  ".clang-format",
+  ".git",
+}
+
+local function esp_root(bufnr)
+  return vim.fs.root(bufnr, { ".esp" })
+end
+
+local function clice_root_dir(bufnr, on_dir)
+  -- Do not start clice in ESP-IDF projects.
+  if esp_root(bufnr) then
+    return
+  end
+
+  local root = vim.fs.root(bufnr, clice_root_markers)
+
+  -- Do not start without a recognizable C/C++ project root.
+  if root then
+    on_dir(root)
+  end
+end
+
+local function esp_clangd_root_dir(bufnr, on_dir)
+  -- Only start Espressif clangd when `.esp` exists in an ancestor.
+  local root = esp_root(bufnr)
+
+  if root then
+    on_dir(root)
+  end
+end
+
+return {
+  {
+    "neovim/nvim-lspconfig",
+
+    opts = {
+      servers = {
+        texlab = {},
+        marksman = {},
+
+        ----------------------------------------------------------------------
+        -- Normal C and C++ projects
+        ----------------------------------------------------------------------
+        clice = {
+          mason = false,
+
+          cmd = {
+            CLICE,
+            "serve",
+          },
+
+          filetypes = {
+            "c",
+            "cpp",
+          },
+
+          root_dir = clice_root_dir,
+
+          capabilities = {
+            textDocument = {
+              completion = {
+                editsNearCursor = true,
+              },
+            },
+
+            offsetEncoding = {
+              "utf-8",
+            },
+          },
+        },
+
+        ----------------------------------------------------------------------
+        -- ESP-IDF projects only
+        ----------------------------------------------------------------------
+        clangd = {
+          mason = false,
+
+          cmd = {
+            ESP_CLANGD,
+            "--background-index",
+            "--clang-tidy",
+            "--header-insertion=iwyu",
+            "--completion-style=detailed",
+            "--function-arg-placeholders",
+            "--fallback-style=llvm",
+            "--query-driver=**/xtensa-esp32*-elf-*,"
+              .. "**/riscv32-esp-elf-*,"
+              .. "/home/flashfish/.espressif/tools/**/bin/*,"
+              .. "/home/flashfish/.espressif/tools/**/bin/*gcc,"
+              .. "/home/flashfish/.espressif/tools/**/bin/*g++",
+          },
+
+          filetypes = {
+            "c",
+            "cpp",
+            "objc",
+            "objcpp",
+          },
+
+          root_dir = esp_clangd_root_dir,
+
+          capabilities = {
+            offsetEncoding = {
+              "utf-16",
+            },
+          },
+
+          init_options = {
+            usePlaceholders = true,
+            completeUnimported = true,
+            clangdFileStatus = true,
+
+            fallbackFlags = {
+              "-std=c++23",
+            },
+          },
+
+          keys = {
+            {
+              "<leader>ch",
+              "<cmd>LspClangdSwitchSourceHeader<cr>",
+              desc = "Switch Source/Header",
+            },
+          },
+        },
+      },
+    },
+  },
+}
